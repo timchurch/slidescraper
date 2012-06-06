@@ -15,7 +15,7 @@ setup(
         'feedparser>=5.1.1',
         'beautifulsoup4>=4.0.2',
         'requests>=0.10.8',
-        'dateutil==1.5',
+        'python-dateutil==1.5',
 #        'xmltodict>=0.1',
     ],
 )
