@@ -4,7 +4,7 @@ import time
 import sha
 import urllib
 from dateutil import parser
-from xml2dict.encoder import XML2Dict
+import xmltodict
 
 
 class SlideShareOEmbedMethod(OEmbedMethod):
@@ -61,11 +61,11 @@ class SlideShareApiMethod(SuiteMethod):
 
     def process(self, response):
         xml = response.text
-        response_json = XML2Dict().parse(xml)
+        response_json = xmltodict.parse(xml)
         response_json = response_json['Slideshow']
 
-        from pprint import pprint
-        pprint(response_json)
+#        from pprint import pprint
+#        pprint(response_json)
         
         data = {'guid': 'slideshare:%s' % response_json['ID'],
                 'title': response_json['Title'],
@@ -74,11 +74,11 @@ class SlideShareApiMethod(SuiteMethod):
                 'embed_code': response_json['Embed'],
                 'publish_datetime': parser.parse(response_json['Created']),
                 'thumbnail_url': response_json['ThumbnailURL'],
-#                'tags': [tag['Tag'] for tag in response_json['Tags']],
+                'tags': [tag['#text'] for tag in response_json['Tags']['Tag']],
                 'user': response_json['Username'],
                 'user_url': "http://www.slideshare.net/%s" % response_json['Username'],
-                'view_count': response_json['NumViews'],
-                'slide_count': response_json['NumSlides'],
+                'view_count': int(response_json['NumViews']),
+                'slide_count': int(response_json['NumSlides']),
                 'language': response_json['Language'],
                 }
         
