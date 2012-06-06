@@ -13,7 +13,7 @@ class SlideShareOEmbedMethod(OEmbedMethod):
 
     :param endpoint: The endpoint url for this suite's oembed API.
     """
-    fields = set(['title', 'user', 'user_url', 'thumbnail_url', 'embed_code', 'slides_count'])
+    fields = set(['title', 'user', 'user_url', 'thumbnail_url', 'embed_code', 'slide_count'])
 
     def process(self, response):
         parsed = json.loads(response.text)
@@ -23,7 +23,7 @@ class SlideShareOEmbedMethod(OEmbedMethod):
             'user_url': parsed['author_url'],
             'thumbnail_url': parsed['thumbnail'],
             'embed_code': parsed['html'],
-            'slides_count': parsed['total_slides']
+            'slide_count': parsed['total_slides']
         }
         return data
 
@@ -31,18 +31,17 @@ class SlideShareOEmbedMethod(OEmbedMethod):
 class SlideShareApiMethod(SuiteMethod):
     fields = set(('link', 'title', 'description', 'guid', 'thumbnail_url',
                   'publish_datetime', 'tags', 'user', 'user_url',
-                  'view_count', 'slide_count', 'language'))
+                  'embed_code', 'view_count', 'slide_count', 'language'))
 
     def get_url(self, slide):
         if slide.api_keys is None or 'slideshare_key' not in slide.api_keys:
             raise ValueError("API key must be set for SlideShare API requests.")
         if 'slideshare_secret' not in slide.api_keys:
-            raise ValueError("API Secret must be set for SlideShare API requests.")
+            raise ValueError("API secret must be set for SlideShare API requests.")
         
         api_url = u"http://www.slideshare.net/api/2/get_slideshow"
         params_dict = self.get_api_params(slide)
         params = urllib.urlencode(params_dict)
-#        print "%s?%s" % (api_url, params) # TESTING
         return "%s?%s" % (api_url, params)
 
     def get_api_params(self, slide):
