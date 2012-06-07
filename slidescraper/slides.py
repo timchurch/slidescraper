@@ -49,7 +49,7 @@ class Slides(object):
         'title', 'description', 'publish_datetime', 
         'link', 'embed_code', 'thumbnail_url',
         'language', 'view_count', 'slide_count', 'license_url',
-        'file_url', 'file_url_mimetype', 'file_url_length', 'file_url_expires',
+        'file_url', 'file_format',
         'user', 'user_url', 'tags',  'guid',
         'index', 'provider'
     )
@@ -69,12 +69,12 @@ class Slides(object):
     #: The url to the actual video file.
     file_url = None
     #: The MIME type for the actual video file
-    file_url_mimetype = None
-    #: The length of the actual video file
-    file_url_length = None
-    #: a datetime.datetime() representing when we think the file URL is no
-    #: longer valid
-    file_url_expires = None
+    file_format = None
+#    #: The length of the actual video file
+#    file_url_length = None
+#    #: a datetime.datetime() representing when we think the file URL is no
+#    #: longer valid
+#    file_url_expires = None
     #: The actual embed code which can be used for displaying the video in a
     #: browser.
     embed_code = None
