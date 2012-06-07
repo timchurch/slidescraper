@@ -32,7 +32,8 @@ import urllib2
 
 import feedparser
 import requests
-import grequests
+# TODO: can't get this to work with Django (need to remove gevent..)
+#import grequests
 
 from slidescraper.exceptions import UnhandledURL
 from slidescraper.utils.feedparser import (struct_time_to_datetime,
@@ -329,8 +330,10 @@ class BaseSuite(object):
 
         best_methods = self.find_best_methods(missing_fields)
 
-        responses = grequests.map([grequests.get(m.get_url(slides), timeout=3)
-                                   for m in best_methods])
+#        responses = grequests.map([grequests.get(m.get_url(slides), timeout=3)
+#                                   for m in best_methods])
+        responses = [requests.get(m.get_url(slides), timeout=3)
+                     for m in best_methods]
 
         data = {}
         for method, response in itertools.izip(best_methods, responses):
