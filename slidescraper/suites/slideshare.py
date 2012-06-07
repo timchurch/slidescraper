@@ -87,9 +87,10 @@ class SlideShareApiMethod(SuiteMethod):
             elif '#text' in tags:
                 data['tags'] = [tags['#text'],]
         
-        if int(response_json['Download']):
-            data['file_url'] = response_json['DownloadUrl']
-            data['file_format'] = response_json['Format']
+#        # Removing for now b/c links have expiration date (very short)
+#        if int(response_json['Download']):
+#            data['file_url'] = response_json['DownloadUrl']
+#            data['file_format'] = response_json['Format']
 
         return data
 
