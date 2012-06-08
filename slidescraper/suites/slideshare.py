@@ -5,6 +5,8 @@ import sha
 import urllib
 from dateutil import parser
 import xmltodict
+from bs4 import BeautifulSoup, SoupStrainer
+from pprint import pprint
 
 
 class SlideShareOEmbedMethod(OEmbedMethod):
@@ -70,7 +72,7 @@ class SlideShareApiMethod(SuiteMethod):
                 'title': response_json['Title'],
                 'link': response_json['URL'],
                 'description': response_json['Description'],
-                'embed_code': SlideShareSuite.strip_embed_extras(response_json['Embed']),
+                'embed_code': SlideShareSuite.build_iframe_embed_code(response_json['ID']),
                 'publish_datetime': parser.parse(response_json['Created']),
                 'thumbnail_url': response_json['ThumbnailURL'],
                 'user': response_json['Username'],
@@ -79,6 +81,15 @@ class SlideShareApiMethod(SuiteMethod):
                 'slide_count': int(response_json['NumSlides']),
                 'language': response_json['Language'],
                 }
+
+        # Embed code
+        soup = BeautifulSoup(response_json['Embed'], parse_only=SoupStrainer("object"))
+        pprint(soup)
+        for tag in soup:
+            embed_width = tag['width']
+            embed_height = tag['height']
+            break
+        data['embed_code'] = SlideShareSuite.build_iframe_embed_code(response_json['ID'], embed_width, embed_height)
 
         if 'Tags' in response_json and 'Tag' in response_json['Tags']:
             tags = response_json['Tags']['Tag']
@@ -127,5 +138,9 @@ class SlideShareSuite(BaseSuite):
         end_tag_len = len(end_tag)
         new_embed_code = embed_code[start:end+end_tag_len]
         return new_embed_code
+
+    @classmethod
+    def build_iframe_embed_code(cls, slidshare_id, width=425, height=355):
+        return "<iframe src=\"http://www.slideshare.net/slideshow/embed_code/{0}\" width=\"{1}\" height=\"{2}\" frameborder=\"0\" marginwidth=\"0\" marginheight=\"0\" scrolling=\"no\" allowfullscreen></iframe>".format(slidshare_id, width, height) 
 
 registry.register(SlideShareSuite)
