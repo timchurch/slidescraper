@@ -53,22 +53,22 @@ class Slides(object):
         'user', 'user_url', 'tags',  'guid',
         'index', 'provider'
     )
-    #: The canonical link to the video. This may not be the same as the url
-    #: used to initialize the video.
+    #: The canonical link to the slideshow. This may not be the same as the url
+    #: used to initialize the slideshow.
     link = None
-    #: A (supposedly) global identifier for the video
+    #: A (supposedly) global identifier for the slideshow
     guid = None
-    #: Where the video was in the feed/search
+    #: Where the slideshow was in the feed/search
     index = None
-    #: The video's title.
+    #: The slideshow's title.
     title = None
-    #: A text or html description of the video.
+    #: A text or html description of the slideshow.
     description = None
-    #: A python datetime indicating when the video was published.
+    #: A python datetime indicating when the slideshow was published.
     publish_datetime = None
-    #: The url to the actual video file.
+    #: The url to the actual slideshow download file.
     file_url = None
-    #: The MIME type for the actual video file
+    #: The format for the slideshow download file
     file_format = None
 #    #: The length of the actual video file
 #    file_url_length = None
@@ -112,7 +112,7 @@ class Slides(object):
         from slidescraper.suites import registry
         if suite is None:
             suite = registry.suite_for_slide_url(url)
-        elif not suite.handles_video_url(url):
+        elif not suite.handles_slide_url(url):
             raise UnhandledURL
         if fields is None:
             self.fields = list(self._all_fields)
@@ -124,7 +124,7 @@ class Slides(object):
         self.provider = suite.provider_name if suite else None
 
         # This private attribute is set to ``True`` when data is loaded into
-        # the video by a scrape suite. It is *not* set when data is pre-loaded
+        # the slideshow by a scrape suite. It is *not* set when data is pre-loaded
         # from a feed or a search.
         self._loaded = False
 
@@ -143,7 +143,7 @@ class Slides(object):
         return self._suite
 
     def load(self):
-        """Uses the video's :attr:`suite` to fetch the fields for the slide deck."""
+        """Uses the slideshow's :attr:`suite` to fetch the fields for the slideshow."""
         if not self._loaded:
             data = self.suite.run_methods(self)
             self._apply(data)
@@ -167,7 +167,7 @@ class Slides(object):
             yield (mem, getattr(self, mem))
 
     def to_json(self, **kw):
-        """Returns the video JSON-ified.
+        """Returns the slideshow JSON-ified.
 
         Takes keyword arguments and passes them to json.dumps().
 
@@ -184,238 +184,238 @@ class Slides(object):
         return json.dumps(dict(self.items()), **kw)
 
 
-#class BaseSlideIterator(object):
-#    """
-#    Generic base class for url-based iterators which rely on suites to yield
-#    :class:`Video` instances. :class:`VideoFeed` and
-#    :class:`VideoSearch` both subclass :class:`BaseVideoIterator`.
-#    """
-#    _first_response = None
-#    _max_results = None
-#
-#    @property
-#    def max_results(self):
-#        """
-#        The maximum number of results for this iterator, or ``None`` if there
-#        is no maximum.
-#
-#        """
-#        return self._max_results
-#
-#    def get_first_url(self):
-#        """
-#        Returns the first url which this iterator is expected to handle.
-#        """
-#        raise NotImplementedError
-#
-#    def get_url_response(self, url):
-#        raise NotImplementedError
-#
-#    def handle_first_response(self, response):
-#        self._first_response = response 
-#
-#    def get_response_items(self, response):
-#        raise NotImplementedError
-#
-#    def get_item_data(self, item):
-#        raise NotImplementedError
-#
-#    def get_next_url(self, response):
-#        raise NotImplementedError
-#
-#    def load(self):
-#        if self._first_response:
-#            return self._first_response
-#        url = self.get_first_url()
-#        response = self.get_url_response(url)
-#        self.handle_first_response(response)
-#        return response
-#
-#    def _data_from_item(self, item):
-#        """
-#        Returns a :class:`Video` given some data from a feed.
-#        """
-#        data = self.get_item_data(item)
-#        video = self.suite.get_video(data['link'],
-#                                     fields=self.fields,
-#                                     api_keys=self.api_keys)
-#        video._apply(data)
-#        video.load()  # Fill in missing data from alternate methods
-#        return video
-#
-#    def __iter__(self):
-#        try:
-#            response = self.load()
-#            item_count = 1
-#            # decrease the index as we count down through the entries.  doesn't
-#            # quite work for feeds where we don't know the /total/ number of
-#            # items; then it'll just index the video within the one feed
-#            while self._max_results is None or item_count < self._max_results:
-#                items = self.get_response_items(response)
-#                for item in items:
-#                    try:
-#                        video = self._data_from_item(item)
-#                    except SlidesDeleted:
-#                        continue
-#                    video.index = item_count
-#                    yield video
-#                    if self._max_results is not None:
-#                        if item_count >= self._max_results:
-#                            raise StopIteration
-#                    item_count += 1
-#
-#                # We haven't hit the limit yet. Continue to the next page if:
-#                # - crawl is enabled
-#                # - the current page was not empty
-#                # - a url can be calculated for the next page.
-#                url = None
-#                if self.crawl and items:
-#                    url = self.get_next_url(response)
-#                if url is None:
-#                    break
-#                response = self.get_url_response(url)
-#        except NotImplementedError:
-#            pass
-#        raise StopIteration
-#
-#
-#class SlideFeed(BaseVideoIterator):
-#    """
-#    Represents a feed that has been scraped from a website. Note that the term
-#    "feed" in this context simply means a list of videos which can be found at
-#    a certain url. The source could as easily be an API, a search result rss
-#    feed, or a video list page which is literally scraped.
-#    
-#    :param url: The url to be scraped.
-#    :param suite: The suite to use for the scraping. If none is provided, one
-#                  will be selected based on the url.
-#    :param fields: Passed on to the :class:`Video` instances which are
-#                   created by this feed.
-#    :param crawl: If ``True``, then the scrape will continue onto subsequent
-#                  pages of the feed if that is supported by the suite. The
-#                  request for the next page will only be executed once the
-#                  current page is exhausted. Default: ``False``.
-#    :param max_results: The maximum number of results to return from iteration.
-#                        Default: ``None`` (as many as possible.)
-#    :param api_keys: A dictionary of any API keys which may be required for the
-#                     suite used by this feed.
-#    :param last_modified: A last-modified date which may be sent to the service
-#                          provider to try to short-circuit fetching a feed
-#                          whose contents are already known.
-#    :param etag: An etag which may be sent to the service provider to try to
-#                 short-circuit fetching a feed whose contents are already
-#                 known.
-#
-#    Additionally, :class:`VideoFeed` populates the following attributes after
-#    fetching its first response. Attributes which are not supported by the
-#    feed's suite or which have not been populated will be ``None``.
-#
-#    .. attribute:: entry_count
-#
-#       The estimated number of entries for this search.
-#
-#    .. attribute:: last_modified
-#
-#       A python datetime representing when the feed was last changed. Before
-#       fetching the first response, this will be equal to the
-#       ``last_modified`` date the :class:`VideoFeed` was instantiated with.
-#
-#    .. attribute:: etag
-#
-#       A marker representing a feed's current state. Before fetching the first
-#       response, this will be equal to the ``etag`` the :class:`VideoFeed`
-#       was instantiated with.
-#
-#    .. attribute:: description
-#
-#       A description of the feed.
-#
-#    .. attribute:: webpage
-#
-#       The url for an html, human-readable version of the feed.
-#
-#    .. attribute:: title
-#
-#       The title of the feed.
-#
-#    .. attribute:: thumbnail_url
-#
-#       A URL for a thumbnail representing the whole feed.
-#
-#    .. attribute:: guid
-#
-#       A unique identifier for the feed.
-#
-#    """
-#
-#    def __init__(self, url, suite=None, fields=None, crawl=False,
-#                 max_results=None, api_keys=None, last_modified=None,
-#                 etag=None):
-#        from vidscraper.suites import registry
-#        self.original_url = url
-#        if suite is None:
-#            suite = registry.suite_for_feed_url(url)
-#        elif not suite.handles_feed_url(url):
-#            raise UnhandledURL
-#        self.url = suite.get_feed_url(url)
-#        self.suite = suite
-#        self.fields = fields
-#        self.crawl = crawl
-#        self._max_results = max_results
-#        self.api_keys = api_keys if api_keys is not None else {}
-#        self.last_modified = last_modified
-#        self.etag = etag
-#
-#        self.entry_count = None
-#        self.description = None
-#        self.webpage = None
-#        self.title = None
-#        self.thumbnail_url = None
-#        self.guid = None
-#
-#    @property
-#    def parsed_feed(self):
-#        if not self._first_response:
-#            self.load()
-#        return self._first_response
-#
-#    def get_first_url(self):
-#        return self.url
-#
-#    def get_url_response(self, url):
-#        return self.suite.get_feed_response(self, url)
-#
-#    def handle_first_response(self, response):
-#        super(VideoFeed, self).handle_first_response(response)
-#        response = self.suite.get_feed_info_response(self, response)
-#        self.title = self.suite.get_feed_title(self, response)
-#        self.entry_count = self.suite.get_feed_entry_count(self, response)
-#        self.description = self.suite.get_feed_description(self, response)
-#        self.webpage = self.suite.get_feed_webpage(self, response)
-#        self.thumbnail_url = self.suite.get_feed_thumbnail_url(self, response)
-#        self.guid = self.suite.get_feed_guid(self, response)
-#        self.last_modified = self.suite.get_feed_last_modified(self, response)
-#        self.etag = self.suite.get_feed_etag(self, response)
-#
-#    def get_response_items(self, response):
-#        return self.suite.get_feed_entries(self, response)
-#
-#    def get_item_data(self, item):
-#        return self.suite.parse_feed_entry(item)
-#
-#    def get_next_url(self, response):
-#        return self.suite.get_next_feed_page_url(self, response)
-#
-#
+class BaseSlideIterator(object):
+    """
+    Generic base class for url-based iterators which rely on suites to yield
+    :class:`Slides` instances. :class:`SlideFeed` and
+    :class:`SlideSearch` both subclass :class:`BaseSlideIterator`.
+    """
+    _first_response = None
+    _max_results = None
+
+    @property
+    def max_results(self):
+        """
+        The maximum number of results for this iterator, or ``None`` if there
+        is no maximum.
+
+        """
+        return self._max_results
+
+    def get_first_url(self):
+        """
+        Returns the first url which this iterator is expected to handle.
+        """
+        raise NotImplementedError
+
+    def get_url_response(self, url):
+        raise NotImplementedError
+
+    def handle_first_response(self, response):
+        self._first_response = response 
+
+    def get_response_items(self, response):
+        raise NotImplementedError
+
+    def get_item_data(self, item):
+        raise NotImplementedError
+
+    def get_next_url(self, response):
+        raise NotImplementedError
+
+    def load(self):
+        if self._first_response:
+            return self._first_response
+        url = self.get_first_url()
+        response = self.get_url_response(url)
+        self.handle_first_response(response)
+        return response
+
+    def _data_from_item(self, item):
+        """
+        Returns a :class:`Slides` given some data from a feed.
+        """
+        data = self.get_item_data(item)
+        slides = self.suite.get_slides(data['link'],
+                                     fields=self.fields,
+                                     api_keys=self.api_keys)
+        slides._apply(data)
+        slides.load()  # Fill in missing data from alternate methods
+        return slides
+
+    def __iter__(self):
+        try:
+            response = self.load()
+            item_count = 1
+            # decrease the index as we count down through the entries.  doesn't
+            # quite work for feeds where we don't know the /total/ number of
+            # items; then it'll just index the slides within the one feed
+            while self._max_results is None or item_count < self._max_results:
+                items = self.get_response_items(response)
+                for item in items:
+                    try:
+                        slides = self._data_from_item(item)
+                    except SlidesDeleted:
+                        continue
+                    slides.index = item_count
+                    yield slides
+                    if self._max_results is not None:
+                        if item_count >= self._max_results:
+                            raise StopIteration
+                    item_count += 1
+
+                # We haven't hit the limit yet. Continue to the next page if:
+                # - crawl is enabled
+                # - the current page was not empty
+                # - a url can be calculated for the next page.
+                url = None
+                if self.crawl and items:
+                    url = self.get_next_url(response)
+                if url is None:
+                    break
+                response = self.get_url_response(url)
+        except NotImplementedError:
+            pass
+        raise StopIteration
+
+
+class SlideFeed(BaseSlideIterator):
+    """
+    Represents a feed that has been scraped from a website. Note that the term
+    "feed" in this context simply means a list of slides which can be found at
+    a certain url. The source could as easily be an API, a search result rss
+    feed, or a list page which is literally scraped.
+    
+    :param url: The url to be scraped.
+    :param suite: The suite to use for the scraping. If none is provided, one
+                  will be selected based on the url.
+    :param fields: Passed on to the :class:`Slides` instances which are
+                   created by this feed.
+    :param crawl: If ``True``, then the scrape will continue onto subsequent
+                  pages of the feed if that is supported by the suite. The
+                  request for the next page will only be executed once the
+                  current page is exhausted. Default: ``False``.
+    :param max_results: The maximum number of results to return from iteration.
+                        Default: ``None`` (as many as possible.)
+    :param api_keys: A dictionary of any API keys which may be required for the
+                     suite used by this feed.
+    :param last_modified: A last-modified date which may be sent to the service
+                          provider to try to short-circuit fetching a feed
+                          whose contents are already known.
+    :param etag: An etag which may be sent to the service provider to try to
+                 short-circuit fetching a feed whose contents are already
+                 known.
+
+    Additionally, :class:`SlideFeed` populates the following attributes after
+    fetching its first response. Attributes which are not supported by the
+    feed's suite or which have not been populated will be ``None``.
+
+    .. attribute:: entry_count
+
+       The estimated number of entries for this search.
+
+    .. attribute:: last_modified
+
+       A python datetime representing when the feed was last changed. Before
+       fetching the first response, this will be equal to the
+       ``last_modified`` date the :class:`SlideFeed` was instantiated with.
+
+    .. attribute:: etag
+
+       A marker representing a feed's current state. Before fetching the first
+       response, this will be equal to the ``etag`` the :class:`SlideFeed`
+       was instantiated with.
+
+    .. attribute:: description
+
+       A description of the feed.
+
+    .. attribute:: webpage
+
+       The url for an html, human-readable version of the feed.
+
+    .. attribute:: title
+
+       The title of the feed.
+
+    .. attribute:: thumbnail_url
+
+       A URL for a thumbnail representing the whole feed.
+
+    .. attribute:: guid
+
+       A unique identifier for the feed.
+
+    """
+
+    def __init__(self, url, suite=None, fields=None, crawl=False,
+                 max_results=None, api_keys=None, last_modified=None,
+                 etag=None):
+        from slidescraper.suites import registry
+        self.original_url = url
+        if suite is None:
+            suite = registry.suite_for_feed_url(url)
+        elif not suite.handles_feed_url(url):
+            raise UnhandledURL
+        self.suite = suite
+        self.fields = fields
+        self.crawl = crawl
+        self._max_results = max_results
+        self.api_keys = api_keys if api_keys is not None else {}
+        self.url = suite.get_feed_url(url, feed=self)
+        self.last_modified = last_modified
+        self.etag = etag
+
+        self.entry_count = None
+        self.description = None
+        self.webpage = None
+        self.title = None
+        self.thumbnail_url = None
+        self.guid = None
+
+    @property
+    def parsed_feed(self):
+        if not self._first_response:
+            self.load()
+        return self._first_response
+
+    def get_first_url(self):
+        return self.url
+
+    def get_url_response(self, url):
+        return self.suite.get_feed_response(self, url)
+
+    def handle_first_response(self, response):
+        super(SlideFeed, self).handle_first_response(response)
+        response = self.suite.get_feed_info_response(self, response)
+        self.title = self.suite.get_feed_title(self, response)
+        self.entry_count = self.suite.get_feed_entry_count(self, response)
+        self.description = self.suite.get_feed_description(self, response)
+        self.webpage = self.suite.get_feed_webpage(self, response)
+        self.thumbnail_url = self.suite.get_feed_thumbnail_url(self, response)
+        self.guid = self.suite.get_feed_guid(self, response)
+        self.last_modified = self.suite.get_feed_last_modified(self, response)
+        self.etag = self.suite.get_feed_etag(self, response)
+
+    def get_response_items(self, response):
+        return self.suite.get_feed_entries(self, response)
+
+    def get_item_data(self, item):
+        return self.suite.parse_feed_entry(item)
+
+    def get_next_url(self, response):
+        return self.suite.get_next_feed_page_url(self, response)
+
+
 #class SlideSearch(BaseSlideIterator):
 #    """
 #    Represents a search against a suite. Iterating over a
-#    :class:`VideoSearch` instance will execute the search and yield
-#    :class:`Video` instances for the results of the search.
+#    :class:`SlideSearch` instance will execute the search and yield
+#    :class:`Slides` instances for the results of the search.
 #
 #    :param query: The raw string for the search.
 #    :param suite: Suite to use for this search.
-#    :param fields: Passed on to the :class:`Video` instances which are
+#    :param fields: Passed on to the :class:`Slides` instances which are
 #                   created by this search.
 #    :param order_by: The ordering to apply to the search results. If a suite
 #                     does not support the given ordering, it will return an
@@ -432,7 +432,7 @@ class Slides(object):
 #    :param api_keys: A dictionary of any API keys which may be required for the
 #                     suite used by this search.
 #
-#    Additionally, VideoSearch supports the following attributes:
+#    Additionally, SlideSearch supports the following attributes:
 #
 #    .. attribute:: total_results
 #
@@ -474,7 +474,7 @@ class Slides(object):
 #        return self.suite.get_search_response(self, url)
 #
 #    def handle_first_response(self, response):
-#        super(VideoSearch, self).handle_first_response(response)
+#        super(SlideSearch, self).handle_first_response(response)
 #        self.total_results = self.suite.get_search_total_results(self,
 #                                                                 response)
 #        self.time = self.suite.get_search_time(self, response)

@@ -28,8 +28,8 @@ import sys
 from optparse import OptionParser
 
 from slidescraper.suites import registry
-from slidescraper.slides import Slides
-#, SlideSearch, SlideFeed
+from slidescraper.slides import Slides, SlideFeed
+#, SlideSearch
 
 
 __version__ = '0.1'
@@ -61,31 +61,31 @@ def auto_scrape(url, fields=None, api_keys=None):
     return slides
 
 
-#def auto_feed(url, fields=None, crawl=False, max_results=None, api_keys=None,
-#              last_modified=None, etag=None):
-#    """
-#    Automatically determines which suite to use and scrapes ``feed_url`` with
-#    that suite. This will return a :class:`VideoFeed` instance instantiated
-#    using the determined suite. When iterated over, the :class:`VideoFeed`
-#    will yield :class:`.Video` instances which have been initialized with
-#    the given ``fields`` and ``api_keys``. If ``crawl`` is ``True`` (not the
-#    default) then :mod:`vidscraper` will return results from multiple pages of
-#    the feed, if the suite supports it.
-#
-#    .. note:: Crawling will only initiate a new HTTP request after it has
-#              exhausted the results on the current page.
-#
-#    :returns: A :class:`SlidesFeed` instance which yields
-#              :class:`.Slides` instances for the items in the feed.
-#
-#    :raises UnhandledURL: if no registered suites know how to handle this url.
-#
-#    """
-#    return SlidesFeed(url, fields=fields, crawl=crawl, max_results=max_results,
-#                      api_keys=api_keys, last_modified=last_modified,
-#                      etag=etag)
-#
-#
+def auto_feed(url, fields=None, crawl=False, max_results=None, api_keys=None,
+              last_modified=None, etag=None):
+    """
+    Automatically determines which suite to use and scrapes ``feed_url`` with
+    that suite. This will return a :class:`VideoFeed` instance instantiated
+    using the determined suite. When iterated over, the :class:`VideoFeed`
+    will yield :class:`.Video` instances which have been initialized with
+    the given ``fields`` and ``api_keys``. If ``crawl`` is ``True`` (not the
+    default) then :mod:`vidscraper` will return results from multiple pages of
+    the feed, if the suite supports it.
+
+    .. note:: Crawling will only initiate a new HTTP request after it has
+              exhausted the results on the current page.
+
+    :returns: A :class:`SlidesFeed` instance which yields
+              :class:`.Slides` instances for the items in the feed.
+
+    :raises UnhandledURL: if no registered suites know how to handle this url.
+
+    """
+    return SlideFeed(url, fields=fields, crawl=crawl, max_results=max_results,
+                      api_keys=api_keys, last_modified=last_modified,
+                      etag=etag)
+
+
 #def auto_search(query, fields=None, order_by=None, crawl=False,
 #                max_results=None, api_keys=None):
 #    """

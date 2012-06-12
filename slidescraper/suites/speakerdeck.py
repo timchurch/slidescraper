@@ -2,6 +2,7 @@ from slidescraper.suites import BaseSuite, registry, SuiteMethod, OEmbedMethod
 import json
 from bs4 import BeautifulSoup, SoupStrainer
 from urlparse import urljoin
+from slidescraper.utils.feedparser import struct_time_to_datetime
 from pprint import pprint
 
 
@@ -120,6 +121,37 @@ class SpeakerDeckSuite(BaseSuite):
         Convert relative urls to absolute url for script source
         """
         return speakerdeck_embed_script.replace('src="/assets', 'src="//speakerdeck.com/assets')
+
+    # ATOM FEED METHODS
+    def get_feed_url(self, feed_url, feed=None):
+        if not feed_url.endswith('.atom'):
+            if feed_url.endswith('/'):
+                return '%s.atom' % feed_url[:-1]
+            return '%s.atom' % feed_url
+        return feed_url
+
+    def parse_feed_entry(self, entry):
+        soup = BeautifulSoup(entry['summary'])
+        for tag in soup.find_all("img", limit=1):
+            thumbnail_url = tag['src']
+            print thumbnail_url
+        for tag in soup.find_all("div", limit=1):
+            description = ''.join(unicode(item) for item in tag.contents)
+            print description
+
+        id_start = entry['id'].rfind('/') + 1
+        speakerdeck_id = entry['id'][id_start:]
+
+        data = {
+            'link': entry['link'],
+            'title': entry['title'],
+            'description': description,
+            'thumbnail_url': thumbnail_url,
+            'publish_datetime': struct_time_to_datetime(entry['published_parsed']),
+            'user': entry['author'],
+            'guid' : SpeakerDeckSuite.build_guid(speakerdeck_id),
+        }
+        return data
 
 registry.register(SpeakerDeckSuite)
 
