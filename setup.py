@@ -10,7 +10,6 @@ setup(
     url='https://github.com/timchurch/slidescraper',
     packages=find_packages(),
     install_requires=[
-        'lxml>=2.3.4',
         'oauth2>=1.5.211',
         'feedparser>=5.1.1',
         'beautifulsoup4>=4.0.2',
