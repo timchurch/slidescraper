@@ -28,26 +28,26 @@ import random
 import time
 import urllib
 
-from lxml import etree
-from lxml.html import clean
-
-DESCRIPTION_CLEANER = clean.Cleaner(
-    remove_tags=['img', 'table', 'tr', 'td', 'th'])
-
-
-def lxml_inner_html(elt):
-    try:
-        return (elt.text or '') + ''.join(
-            etree.tostring(child) for child in elt)
-    except UnicodeError:
-        return u''
-
-
+#from lxml import etree
+#from lxml.html import clean
+#
+#DESCRIPTION_CLEANER = clean.Cleaner(
+#    remove_tags=['img', 'table', 'tr', 'td', 'th'])
+#
+#
+#def lxml_inner_html(elt):
+#    try:
+#        return (elt.text or '') + ''.join(
+#            etree.tostring(child) for child in elt)
+#    except UnicodeError:
+#        return u''
+#
+#
 # TODO: Rename this to sanitize? Should this really be done with an xml cleaner?
-def clean_description_html(html):
-    if not html:
-        return html
-    return DESCRIPTION_CLEANER.clean_html(html)
+#def clean_description_html(html):
+#    if not html:
+#        return html
+#    return DESCRIPTION_CLEANER.clean_html(html)
 
 
 # TODO: Is this still required?
