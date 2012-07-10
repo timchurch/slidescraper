@@ -198,11 +198,6 @@ class SlideShareSuite(BaseSuite):
         response = urllib2.urlopen(feed_url, timeout=5)
         response_text = response.read()
         parsed_response = xmltodict.parse(response_text)
-#        print "RESPONSE KEYS"
-#        for key in parsed_response.keys():
-#            print key
-#            for key2 in parsed_response[key].keys():
-#                print "    %s" % key2
         return parsed_response
 
     def get_feed_title(self, feed, response):
@@ -265,5 +260,8 @@ class SlideShareSuite(BaseSuite):
         elif 'Tag' in feed_response and 'Slideshow' in feed_response['Tag']:
             return reversed(feed_response['Tag']['Slideshow'])
         return feed_response
+
+    def parse_feed_entry(self, entry):
+        return SlideShareApiMethod.parse_api_data(entry)
 
 registry.register(SlideShareSuite)
