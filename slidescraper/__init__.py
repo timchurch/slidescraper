@@ -191,4 +191,4 @@ class SlidescraperCommandHandler(object):
         return handler()
 
 if __name__ == "__main__":
-    sys.exit(VidscraperCommandHandler().main())
+    sys.exit(SlidescraperCommandHandler().main())
